@@ -1,0 +1,99 @@
+/* GLOBAL STYLES */
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  padding: 10px;
+}
+
+
+/* GRID CONTAINER */
+
+.grid-container {
+  height: 600px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  position: relative;
+}
+
+
+/* GRID HEADER */
+
+.grid-header {
+  display: flex;
+  align-items: center;
+  background: #f4f4f4;
+  border-bottom: 2px solid #ddd;
+  font-weight: bold;
+}
+
+
+/* ROWS */
+
+.row {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  border-bottom: 1px solid #eee;
+}
+
+
+/* CELLS */
+
+.cell {
+  padding: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+/* COLUMN WIDTHS (IMPORTANT FOR ALIGNMENT) */
+
+.cell:nth-child(1) {
+  width: 80px;   /* ID */
+}
+
+.cell:nth-child(2) {
+  width: 180px;  /* Date */
+}
+
+.cell:nth-child(3) {
+  width: 200px;  /* Merchant */
+}
+
+.cell:nth-child(4) {
+  width: 150px;  /* Category */
+}
+
+.cell:nth-child(5) {
+  width: 120px;  /* Amount */
+}
+
+.cell:nth-child(6) {
+  width: 120px;  /* Status */
+}
+
+
+/* HEADER STYLE */
+
+.header {
+  cursor: pointer;
+}
+
+
+/* ROW SELECTION */
+
+.row[data-selected="true"] {
+  background: #e6f2ff;
+}
+
+
+/* HOVER EFFECT */
+
+.row:hover {
+  background: #f9f9f9;
+}

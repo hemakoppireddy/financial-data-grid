@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-data": "node ./scripts/generate-data.js"
   },
   "dependencies": {
+    "faker": "^6.6.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
