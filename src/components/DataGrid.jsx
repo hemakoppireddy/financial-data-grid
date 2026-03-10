@@ -18,6 +18,10 @@ function DataGrid() {
 
   const [selectedRows, setSelectedRows] = useState(new Set());
 
+  // editing state
+  const [editingCell, setEditingCell] = useState(null);
+  const [editValue, setEditValue] = useState("");
+
   // LOAD DATA
   useEffect(() => {
     fetch("/transactions.json")
@@ -107,6 +111,31 @@ function DataGrid() {
     setSelectedRows(newSelection);
   }
 
+  // START EDITING
+  function startEditing(rowIndex, column, value) {
+    setEditingCell({ rowIndex, column });
+    setEditValue(value);
+  }
+
+  // SAVE EDIT
+  function saveEdit() {
+
+    if (!editingCell) return;
+
+    const { rowIndex, column } = editingCell;
+
+    const updated = [...filteredData];
+
+    updated[rowIndex] = {
+      ...updated[rowIndex],
+      [column]: editValue
+    };
+
+    setFilteredData(updated);
+
+    setEditingCell(null);
+  }
+
   const { start, end } = useVirtualScroll({
     rowHeight: ROW_HEIGHT,
     totalRows: filteredData.length,
@@ -123,7 +152,6 @@ function DataGrid() {
       {/* FILTER UI */}
       <div style={{ padding: "10px" }}>
 
-        {/* QUICK STATUS FILTERS */}
         <button
           data-test-id="quick-filter-Completed"
           onClick={() => setStatusFilter("Completed")}
@@ -144,7 +172,6 @@ function DataGrid() {
 
         <br /><br />
 
-        {/* MERCHANT FILTER */}
         <input
           type="text"
           placeholder="Filter merchant..."
@@ -245,11 +272,33 @@ function DataGrid() {
 
                 <div className="cell">{row.date}</div>
 
+                {/* MERCHANT EDITABLE CELL */}
                 <div
                   className="cell"
                   data-test-id={`cell-${actualIndex}-merchant`}
+                  onDoubleClick={() =>
+                    startEditing(actualIndex, "merchant", row.merchant)
+                  }
                 >
-                  {row.merchant}
+
+                  {editingCell &&
+                  editingCell.rowIndex === actualIndex &&
+                  editingCell.column === "merchant" ? (
+
+                    <input
+                      autoFocus
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      onBlur={saveEdit}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") saveEdit();
+                      }}
+                    />
+
+                  ) : (
+                    row.merchant
+                  )}
+
                 </div>
 
                 <div className="cell">{row.category}</div>
