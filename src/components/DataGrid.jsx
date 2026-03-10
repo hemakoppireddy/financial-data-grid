@@ -16,6 +16,8 @@ function DataGrid() {
   const [merchantFilter, setMerchantFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState(null);
 
+  const [selectedRows, setSelectedRows] = useState(new Set());
+
   // LOAD DATA
   useEffect(() => {
     fetch("/transactions.json")
@@ -26,7 +28,7 @@ function DataGrid() {
       });
   }, []);
 
-  // FILTERING (merchant + status) WITH DEBOUNCE
+  // FILTERING (merchant + status)
   useEffect(() => {
 
     const timer = setTimeout(() => {
@@ -80,6 +82,29 @@ function DataGrid() {
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
     }
+  }
+
+  // ROW SELECTION
+  function handleRowClick(index, event) {
+
+    const newSelection = new Set(selectedRows);
+
+    if (event.ctrlKey || event.metaKey) {
+
+      if (newSelection.has(index)) {
+        newSelection.delete(index);
+      } else {
+        newSelection.add(index);
+      }
+
+    } else {
+
+      newSelection.clear();
+      newSelection.add(index);
+
+    }
+
+    setSelectedRows(newSelection);
   }
 
   const { start, end } = useVirtualScroll({
@@ -211,6 +236,8 @@ function DataGrid() {
                 key={row.id}
                 className="row"
                 data-test-id={`virtual-row-${actualIndex}`}
+                data-selected={selectedRows.has(actualIndex) ? "true" : undefined}
+                onClick={(e) => handleRowClick(actualIndex, e)}
                 style={{ height: ROW_HEIGHT }}
               >
 
