@@ -14,6 +14,7 @@ function DataGrid() {
   const [sortDirection, setSortDirection] = useState("asc");
 
   const [merchantFilter, setMerchantFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState(null);
 
   // LOAD DATA
   useEffect(() => {
@@ -25,21 +26,26 @@ function DataGrid() {
       });
   }, []);
 
-  // DEBOUNCED FILTERING
+  // FILTERING (merchant + status) WITH DEBOUNCE
   useEffect(() => {
 
     const timer = setTimeout(() => {
 
-      if (!merchantFilter) {
-        setFilteredData(data);
-        return;
+      let result = data;
+
+      if (merchantFilter) {
+        const lower = merchantFilter.toLowerCase();
+
+        result = result.filter(row =>
+          row.merchant.toLowerCase().includes(lower)
+        );
       }
 
-      const lower = merchantFilter.toLowerCase();
-
-      const result = data.filter(row =>
-        row.merchant.toLowerCase().includes(lower)
-      );
+      if (statusFilter) {
+        result = result.filter(row =>
+          row.status === statusFilter
+        );
+      }
 
       setFilteredData(result);
 
@@ -47,7 +53,7 @@ function DataGrid() {
 
     return () => clearTimeout(timer);
 
-  }, [merchantFilter, data]);
+  }, [merchantFilter, statusFilter, data]);
 
   // SORT FUNCTION
   function handleSort(key) {
@@ -92,6 +98,28 @@ function DataGrid() {
       {/* FILTER UI */}
       <div style={{ padding: "10px" }}>
 
+        {/* QUICK STATUS FILTERS */}
+        <button
+          data-test-id="quick-filter-Completed"
+          onClick={() => setStatusFilter("Completed")}
+        >
+          Completed
+        </button>
+
+        <button
+          data-test-id="quick-filter-Pending"
+          onClick={() => setStatusFilter("Pending")}
+        >
+          Pending
+        </button>
+
+        <button onClick={() => setStatusFilter(null)}>
+          Clear
+        </button>
+
+        <br /><br />
+
+        {/* MERCHANT FILTER */}
         <input
           type="text"
           placeholder="Filter merchant..."
