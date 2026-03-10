@@ -8,15 +8,46 @@ function DataGrid() {
   const containerRef = useRef(null);
 
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
 
   const [sortKey, setSortKey] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
 
+  const [merchantFilter, setMerchantFilter] = useState("");
+
+  // LOAD DATA
   useEffect(() => {
     fetch("/transactions.json")
       .then(res => res.json())
-      .then(setData);
+      .then(res => {
+        setData(res);
+        setFilteredData(res);
+      });
   }, []);
+
+  // DEBOUNCED FILTERING
+  useEffect(() => {
+
+    const timer = setTimeout(() => {
+
+      if (!merchantFilter) {
+        setFilteredData(data);
+        return;
+      }
+
+      const lower = merchantFilter.toLowerCase();
+
+      const result = data.filter(row =>
+        row.merchant.toLowerCase().includes(lower)
+      );
+
+      setFilteredData(result);
+
+    }, 300);
+
+    return () => clearTimeout(timer);
+
+  }, [merchantFilter, data]);
 
   // SORT FUNCTION
   function handleSort(key) {
@@ -30,7 +61,7 @@ function DataGrid() {
     setSortKey(key);
     setSortDirection(direction);
 
-    const sorted = [...data].sort((a, b) => {
+    const sorted = [...filteredData].sort((a, b) => {
 
       if (a[key] < b[key]) return direction === "asc" ? -1 : 1;
       if (a[key] > b[key]) return direction === "asc" ? 1 : -1;
@@ -38,7 +69,7 @@ function DataGrid() {
       return 0;
     });
 
-    setData(sorted);
+    setFilteredData(sorted);
 
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
@@ -47,16 +78,33 @@ function DataGrid() {
 
   const { start, end } = useVirtualScroll({
     rowHeight: ROW_HEIGHT,
-    totalRows: data.length,
+    totalRows: filteredData.length,
     containerRef
   });
 
-  const visibleRows = data.slice(start, end);
+  const visibleRows = filteredData.slice(start, end);
 
   const offsetY = start * ROW_HEIGHT;
 
   return (
     <div>
+
+      {/* FILTER UI */}
+      <div style={{ padding: "10px" }}>
+
+        <input
+          type="text"
+          placeholder="Filter merchant..."
+          data-test-id="filter-merchant"
+          value={merchantFilter}
+          onChange={(e) => setMerchantFilter(e.target.value)}
+        />
+
+        <div data-test-id="filter-count">
+          Showing {filteredData.length} of {data.length} rows
+        </div>
+
+      </div>
 
       {/* GRID HEADER */}
       <div className="grid-header">
@@ -113,7 +161,7 @@ function DataGrid() {
         {/* SIZER */}
         <div
           style={{
-            height: data.length * ROW_HEIGHT
+            height: filteredData.length * ROW_HEIGHT
           }}
         />
 
