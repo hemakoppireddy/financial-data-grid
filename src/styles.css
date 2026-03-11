@@ -91,9 +91,16 @@ h1 {
   background: #e6f2ff;
 }
 
-
 /* HOVER EFFECT */
 
 .row:hover {
   background: #f9f9f9;
+}
+
+.pinned-column {
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 5;
+  border-right: 1px solid #ddd;
 }

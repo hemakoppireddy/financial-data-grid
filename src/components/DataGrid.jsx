@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import useVirtualScroll from "../hooks/useVirtualScroll";
+import DebugPanel from "./DebugPanel";
 
 const ROW_HEIGHT = 40;
 
@@ -18,9 +19,10 @@ function DataGrid() {
 
   const [selectedRows, setSelectedRows] = useState(new Set());
 
-  // editing state
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState("");
+
+  const [pinnedColumns, setPinnedColumns] = useState(new Set());
 
   // LOAD DATA
   useEffect(() => {
@@ -32,7 +34,7 @@ function DataGrid() {
       });
   }, []);
 
-  // FILTERING (merchant + status)
+  // FILTERING
   useEffect(() => {
 
     const timer = setTimeout(() => {
@@ -111,13 +113,12 @@ function DataGrid() {
     setSelectedRows(newSelection);
   }
 
-  // START EDITING
+  // EDITING
   function startEditing(rowIndex, column, value) {
     setEditingCell({ rowIndex, column });
     setEditValue(value);
   }
 
-  // SAVE EDIT
   function saveEdit() {
 
     if (!editingCell) return;
@@ -136,6 +137,20 @@ function DataGrid() {
     setEditingCell(null);
   }
 
+  // COLUMN PINNING
+  function togglePin(column) {
+
+    const newPinned = new Set(pinnedColumns);
+
+    if (newPinned.has(column)) {
+      newPinned.delete(column);
+    } else {
+      newPinned.add(column);
+    }
+
+    setPinnedColumns(newPinned);
+  }
+
   const { start, end } = useVirtualScroll({
     rowHeight: ROW_HEIGHT,
     totalRows: filteredData.length,
@@ -148,6 +163,14 @@ function DataGrid() {
 
   return (
     <div>
+
+      {/* PIN BUTTON */}
+      <button
+        data-test-id="pin-column-id"
+        onClick={() => togglePin("id")}
+      >
+        Pin ID Column
+      </button>
 
       {/* FILTER UI */}
       <div style={{ padding: "10px" }}>
@@ -190,7 +213,7 @@ function DataGrid() {
       <div className="grid-header">
 
         <div
-          className="cell header"
+          className={`cell header ${pinnedColumns.has("id") ? "pinned-column" : ""}`}
           data-test-id="header-id"
           onClick={() => handleSort("id")}
         >
@@ -205,13 +228,9 @@ function DataGrid() {
           Date
         </div>
 
-        <div className="cell header">
-          Merchant
-        </div>
+        <div className="cell header">Merchant</div>
 
-        <div className="cell header">
-          Category
-        </div>
+        <div className="cell header">Category</div>
 
         <div
           className="cell header"
@@ -221,9 +240,7 @@ function DataGrid() {
           Amount
         </div>
 
-        <div className="cell header">
-          Status
-        </div>
+        <div className="cell header">Status</div>
 
       </div>
 
@@ -238,14 +255,12 @@ function DataGrid() {
         }}
       >
 
-        {/* SIZER */}
         <div
           style={{
             height: filteredData.length * ROW_HEIGHT
           }}
         />
 
-        {/* WINDOW */}
         <div
           style={{
             position: "absolute",
@@ -268,11 +283,14 @@ function DataGrid() {
                 style={{ height: ROW_HEIGHT }}
               >
 
-                <div className="cell">{row.id}</div>
+                <div
+                  className={`cell ${pinnedColumns.has("id") ? "pinned-column" : ""}`}
+                >
+                  {row.id}
+                </div>
 
                 <div className="cell">{row.date}</div>
 
-                {/* MERCHANT EDITABLE CELL */}
                 <div
                   className="cell"
                   data-test-id={`cell-${actualIndex}-merchant`}
@@ -315,6 +333,13 @@ function DataGrid() {
         </div>
 
       </div>
+
+      {/* DEBUG PANEL */}
+      <DebugPanel
+        start={start}
+        renderedRows={visibleRows.length}
+        totalRows={filteredData.length}
+      />
 
     </div>
   );
