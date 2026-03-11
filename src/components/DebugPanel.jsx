@@ -1,6 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 function DebugPanel({ start, renderedRows, totalRows }) {
+
+  const [fps, setFps] = useState(0);
+
+  useEffect(() => {
+
+    let frameCount = 0;
+    let lastTime = performance.now();
+
+    function measureFPS() {
+
+      frameCount++;
+
+      const now = performance.now();
+
+      if (now >= lastTime + 1000) {
+
+        setFps(frameCount);
+
+        frameCount = 0;
+        lastTime = now;
+
+      }
+
+      requestAnimationFrame(measureFPS);
+    }
+
+    requestAnimationFrame(measureFPS);
+
+  }, []);
 
   return (
     <div
@@ -18,7 +47,7 @@ function DebugPanel({ start, renderedRows, totalRows }) {
     >
 
       <div data-test-id="debug-fps">
-        FPS: ~60
+        FPS: {fps}
       </div>
 
       <div data-test-id="debug-rendered-rows">

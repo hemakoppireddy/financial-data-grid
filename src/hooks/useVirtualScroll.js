@@ -1,39 +1,66 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function useVirtualScroll({
   rowHeight,
   totalRows,
   containerRef
 }) {
+
   const [range, setRange] = useState({
     start: 0,
     end: 50
   });
 
   useEffect(() => {
+
     const container = containerRef.current;
 
-    function onScroll() {
+    let ticking = false;
+
+    function updateVisibleRows() {
+
       const scrollTop = container.scrollTop;
       const containerHeight = container.clientHeight;
 
       const startIndex = Math.floor(scrollTop / rowHeight);
-      const visibleRows = Math.ceil(containerHeight / rowHeight);
+      const visibleCount = Math.ceil(containerHeight / rowHeight);
 
       const buffer = 10;
 
-      const endIndex = startIndex + visibleRows + buffer;
+      const endIndex = Math.min(
+        totalRows,
+        startIndex + visibleCount + buffer
+      );
 
       setRange({
         start: startIndex,
         end: endIndex
       });
+
+      ticking = false;
+    }
+
+    function onScroll() {
+
+      if (!ticking) {
+
+        window.requestAnimationFrame(updateVisibleRows);
+
+        ticking = true;
+
+      }
+
     }
 
     container.addEventListener("scroll", onScroll);
 
-    return () => container.removeEventListener("scroll", onScroll);
-  }, [containerRef, rowHeight]);
+    updateVisibleRows();
+
+    return () => {
+      container.removeEventListener("scroll", onScroll);
+    };
+
+  }, [containerRef, rowHeight, totalRows]);
 
   return range;
 }
